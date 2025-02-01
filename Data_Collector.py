@@ -30,12 +30,17 @@ auth_code = None
 # num_songs = [0]
 
 #global dbs
-conn = sqlite3.connect("/Users/mitul/Desktop/spotify/spotify.db")
+conn = sqlite3.connect("/Users/mitul/Desktop/spotify/main/data_files/spotify.db")
 # main_list = pd.read_sql("SELECT * FROM main", conn)
 # artists = pd.read_sql("SELECT * FROM artists", conn)
 # album = pd.read_sql("SELECT * FROM albums", conn)
 # times = pd.read_sql("SELECT * FROM times", conn)
-last = pd.read_sql("SELECT * FROM last", conn)
+cursor = conn.cursor()
+cursor.execute("SELECT * FROM last")
+result = cursor.fetchall()
+print(result)
+last = result[1][1]
+#print(last)
 conn.close()
 
 
@@ -160,7 +165,7 @@ def save_tracks(tracks):
 def save_new_data(tracks):
     last_p = [tracks['items'][0]['track']['name'], tracks['items'][0]['played_at']]
     l = pd.DataFrame(last_p)
-    conn = sqlite3.connect("/Users/mitul/Desktop/spotify/spotify.db")
+    conn = sqlite3.connect("/Users/mitul/Desktop/spotify/main/data_files/spotify.db")
     l.to_sql("last", conn, index=True, if_exists="replace")
     cursor = conn.cursor()
     for item in tracks['items']:
@@ -174,25 +179,34 @@ def save_new_data(tracks):
         exists = result[0]
         #print(exists)
         if exists:
-            temp = cursor.execute('SELECT "Listen History" FROM times WHERE "Song" = ? AND "Artist" =? ', (name, artist))
+            cursor.execute('SELECT "Listen History" FROM times WHERE "Song" = ? AND "Artist" = ?', (name, artist))
             result = cursor.fetchone()
-            times = result[0]
+            #new = False
+            if not result:
+                new_row = {"Song": [name], "Artist": [artist], "Listen History": [item['played_at']]}
+                db = pd.DataFrame(new_row)
+                db.to_sql("times", conn, if_exists="append", index=False)
+                times = item['played_at']
+                #new = True
+            else:
+                times = result[0]
             print(name)
             print("new ", times)
             print("old ", item['played_at'])
             #times = []
-            if item['played_at'] in times:
+            if item['played_at'] == last:
                  break
             else:
                 #FREQUENCY UPDATE
                 times= item['played_at']
-                temp = cursor.execute('SELECT "Times Played" FROM main WHERE "Song Name" = ? AND "Artists" = ?', (name, artist))
+                cursor.execute('SELECT "Times Played" FROM main WHERE "Song Name" = ? AND "Artists" = ?', (name, artist))
                 num_played = cursor.fetchone()
                 #print(num_played)
-                cursor.execute('UPDATE main SET "Times Played" = ? WHERE "Song Name" = ? AND "Artist" = ?', (1 if num_played == None else num_played[0]+1, name, artist))
+                cursor.execute('UPDATE main SET "Times Played" = ? WHERE "Song Name" = ? AND "Artist" = ?', (num_played[0]+1, name, artist))
                 #num_art = []
                 #cursor.execute('SELECT "Listen History" FROM times WHERE "Song" = ? AND "Artist" = ?', (name, artist))
                 cursor.execute('UPDATE times SET "Listen History" = ? WHERE "Song" = ? AND "Artist" = ?', (item['played_at'], name, artist))
+                conn.commit()
                 # new_row = {"Song": [name], "Artist": [artist], "Listen History": [item['played_at']]}
                 # db = pd.DataFrame(new_row)
                 # db.to_sql("times", conn, if_exists="append", index=False)

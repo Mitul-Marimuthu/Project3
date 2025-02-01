@@ -1,7 +1,7 @@
 import pandas as pd
 import sqlite3
 
-conn = sqlite3.connect("Users/mitul/Desktop/spotify/main/data_files/spotify.db")
+conn = sqlite3.connect("/Users/mitul/Desktop/spotify/main/data_files/spotify.db")
 #cursor = conn.cursor()
 # conn.execute("DELETE FROM times")
 # conn.commit()
@@ -74,6 +74,15 @@ conn = sqlite3.connect("Users/mitul/Desktop/spotify/main/data_files/spotify.db")
 # # db = db.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
 
 #LOOK AT THE FUCKING FILES BEFORE DOING THIS BULLSHIT
+
+def times():
+    db = pd.read_csv('times.csv')
+    db = db.groupby("Song", as_index=False).agg({
+        "Artist": 'first',
+        "Listen History": 'max'
+    })
+    db.to_sql("times", conn, if_exists="replace", index=False)
+
 def albums():
     db = pd.read_sql("SELECT * FROM albums", conn)
     # db.columns = db.columns.str.strip()
@@ -131,4 +140,5 @@ def fix_images():
 
 
 #fix_images()
+times()
 conn.close()
