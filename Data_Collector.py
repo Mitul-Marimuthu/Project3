@@ -179,33 +179,34 @@ def save_new_data(tracks):
         exists = result[0]
         #print(exists)
         if exists:
-            cursor.execute('SELECT "Listen History" FROM times WHERE "Song" = ? AND "Artist" = ?', (name, artist))
-            result = cursor.fetchone()
+            #cursor.execute('SELECT "Listen History" FROM times WHERE "Song" = ? AND "Artist" = ?', (name, artist))
+            #result = cursor.fetchone()
             #new = False
-            if not result:
-                new_row = {"Song": [name], "Artist": [artist], "Listen History": [item['played_at']]}
-                db = pd.DataFrame(new_row)
-                db.to_sql("times", conn, if_exists="append", index=False)
-                times = item['played_at']
-                #new = True
-            else:
-                times = result[0]
-            print(name)
-            print("new ", times)
-            print("old ", item['played_at'])
-            #times = []
+            # if not result:
+            #     new_row = {"Song": [name], "Artist": [artist], "Listen History": [item['played_at']]}
+            #     db = pd.DataFrame(new_row)
+            #     db.to_sql("times", conn, if_exists="append", index=False)
+            #     times = item['played_at']
+            #     #new = True
+            # else:
+            #     times = result[0]
+            # print(name)
+            # print("new ", times)
+            # print("old ", item['played_at'])
+            # #times = []
             if item['played_at'] == last:
                  break
             else:
+                print(name)
                 #FREQUENCY UPDATE
-                times= item['played_at']
+                #times= item['played_at']
                 cursor.execute('SELECT "Times Played" FROM main WHERE "Song Name" = ? AND "Artists" = ?', (name, artist))
                 num_played = cursor.fetchone()
                 #print(num_played)
                 cursor.execute('UPDATE main SET "Times Played" = ? WHERE "Song Name" = ? AND "Artist" = ?', (num_played[0]+1, name, artist))
                 #num_art = []
                 #cursor.execute('SELECT "Listen History" FROM times WHERE "Song" = ? AND "Artist" = ?', (name, artist))
-                cursor.execute('UPDATE times SET "Listen History" = ? WHERE "Song" = ? AND "Artist" = ?', (item['played_at'], name, artist))
+                #cursor.execute('UPDATE times SET "Listen History" = ? WHERE "Song" = ? AND "Artist" = ?', (item['played_at'], name, artist))
                 conn.commit()
                 # new_row = {"Song": [name], "Artist": [artist], "Listen History": [item['played_at']]}
                 # db = pd.DataFrame(new_row)
@@ -219,9 +220,9 @@ def save_new_data(tracks):
             #print(db2.columns)
             #print(type(item['played_at']))
             db.to_sql("main", conn, if_exists="append", index=False)
-            new_row = {"Song": [name], "Artist": [artist], "Listen History": [item['played_at']]}
-            db = pd.DataFrame(new_row)
-            db.to_sql("times", conn, if_exists="append", index=False)
+            # new_row = {"Song": [name], "Artist": [artist], "Listen History": [item['played_at']]}
+            # db = pd.DataFrame(new_row)
+            # db.to_sql("times", conn, if_exists="append", index=False)
         #ARTIST UPDATE
         #print(artist)
         art = artist.split(",")
@@ -303,24 +304,24 @@ def save_new_data(tracks):
 
 
 #updates the artist counter
-def update_artist_counter(track):
-    global artist_list
-    for artist in track['artists']:
-        name = artist['name']
-        if name in artist_list:
-            artist_list[name] += 1
-        else:
-            artist_list[name] = 1
+# def update_artist_counter(track):
+#     global artist_list
+#     for artist in track['artists']:
+#         name = artist['name']
+#         if name in artist_list:
+#             artist_list[name] += 1
+#         else:
+#             artist_list[name] = 1
 
-#updates the album counter
-def update_album_counter(track):
-    global album_list
-    name = track['album']['name']
-    artists = ", ".join(artist['name'] for artist in track['album']['artists'])
-    if track['album']['name'] in album_list:
-        album_list[name][1] += 1
-    else:
-        album_list[name] = [artists, 1]
+# #updates the album counter
+# def update_album_counter(track):
+#     global album_list
+#     name = track['album']['name']
+#     artists = ", ".join(artist['name'] for artist in track['album']['artists'])
+#     if track['album']['name'] in album_list:
+#         album_list[name][1] += 1
+#     else:
+#         album_list[name] = [artists, 1]
 
 #all from beta (txt) version
 #sorts all of the dictionaries accordingly
@@ -350,16 +351,16 @@ def update_album_counter(track):
 #     global last_played
 #     File_Handlers.write_to_file(data, album_list, artist_list, last_played)
 
-def sort_dbs():
-    conn = sqlite3.connect("/Users/mitul/Desktop/spotify/main/data_files/spotify.db")
-    cursor = conn.cursor()
+# def sort_dbs():
+#     conn = sqlite3.connect("/Users/mitul/Desktop/spotify/main/data_files/spotify.db")
+#     cursor = conn.cursor()
 
-    cursor.execute('SELECT * FROM main ORDER BY "Times Played" DESC')
-    cursor.execute('SELECT * FROM albums ORDER BY "Number of Songs" DESC')
-    cursor.execute('SELECT * FROM artists ORDER BY "Songs Listened To" DESC')
+#     cursor.execute('SELECT * FROM main ORDER BY "Times Played" DESC')
+#     cursor.execute('SELECT * FROM albums ORDER BY "Number of Songs" DESC')
+#     cursor.execute('SELECT * FROM artists ORDER BY "Songs Listened To" DESC')
 
-    conn.commit()
-    conn.close()
+#     conn.commit()
+#     conn.close()
 
 def collect_data():
     #read_from_files()
@@ -368,7 +369,7 @@ def collect_data():
         access_token = get_access_token(auth_code)
         if access_token:
             get_recently_played_tracks_normal(access_token)
-            sort_dbs()
+            # sort_dbs()
             # if tracks:
             #     save_new_data(tracks)
             #sorts()
